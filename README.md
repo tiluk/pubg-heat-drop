@@ -1,39 +1,9 @@
 # pubg-heat-drop
 
-This template should help get you started developing with Vue 3 in Vite.
+This is a website and backend service to let multiple people vote on a map location in PUBG.
+The votes should be shown via a heat map overlay.
+It is mostly intended for twitch streamers, so their viewer can decide where the streamer should jump to.
 
-## Recommended IDE Setup
+## Idea
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-bun install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-bun dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-bun build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-bun lint
-```
+The Idea for this was proposed by [Heawin](https://twitch.tv/heawin)
