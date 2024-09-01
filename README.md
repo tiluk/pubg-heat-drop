@@ -19,10 +19,10 @@ The Idea for this was proposed by [Heawin](https://twitch.tv/heawin)
 1. Clone the repository
 
    ```bash
-   git clone git@github.com:FireWolf943/pubg-heat-drop.git
+   git clone git@github.com:tiluk/pubg-heat-drop.git
    ```
 
-1. Add High_Res files to /public/maps/<map_name>
+1. Add High_Res files to /src/assets/maps/<map_name>
 
    - The files can be found in the [pubg api assetes](https://github.com/pubg/api-assets/tree/master/Assets/Maps)
 
