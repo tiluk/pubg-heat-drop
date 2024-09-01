@@ -38,7 +38,13 @@ const toPreviewPath = (map: string) => `src/assets/maps/${map.toLocaleLowerCase(
         :title="map.name"
       >
         <template v-slot:actions>
-          <v-btn text="Switch To Map" variant="elevated" color="primary" block></v-btn>
+          <v-btn
+            text="Switch To Map"
+            variant="elevated"
+            color="primary"
+            block
+            @click="$emit('map-selected', map.name)"
+          ></v-btn>
         </template>
       </v-card>
     </v-row>

@@ -1,7 +1,17 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onMounted } from 'vue'
+
+const props = defineProps<{
+  map: string
+}>()
+
+const toMapPath = (map: string) => `src/assets/maps/${map.toLocaleLowerCase()}/Low_Res.png`
+
+onMounted(() => {})
+</script>
 
 <template>
-  <v-img src="src/assets/maps/erangel/High_Res.png"></v-img>
+  <v-img :src="toMapPath(props.map)"></v-img>
 </template>
 
 <style scoped lang="scss">
