@@ -36,3 +36,7 @@ The Idea for this was proposed by [Heawin](https://twitch.tv/heawin)
 ```bash
 bun dev
 ```
+
+##### Attributions
+
+- [Leaflet](https://leafletjs.com/)

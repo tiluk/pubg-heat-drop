@@ -19,7 +19,7 @@ const selectedMap = (map: string) => {
           <LobbySettings />
         </v-col>
         <v-col cols="12" lg="6">
-          <PubgMap :map="currentMap" />
+          <PubgMap :selectedMap="currentMap" class="map" />
         </v-col>
         <v-col cols="12" lg="3">
           <MapSelection @map-selected="selectedMap" />
@@ -29,9 +29,13 @@ const selectedMap = (map: string) => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .main {
   height: 100vh;
   width: 100vw;
+}
+
+.map {
+  border: 5px solid black;
 }
 </style>
