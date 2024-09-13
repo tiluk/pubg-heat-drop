@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 const leafletMap = ref<L.Map>()
 const heat = ref<L.HeatLayer>()
-const latlngs = ref<L.LatLng[]>([])
+const heatLatLngs = ref<L.LatLng[]>([])
 const playerCount = ref<number>(100)
 
 const toMapPath = (map: string) => `src/assets/maps/${map.toLocaleLowerCase()}/Low_Res.png`
@@ -32,14 +32,16 @@ const initMap = () => {
   L.imageOverlay(toMapPath(props.selectedMap), bounds).addTo(leafletMap.value)
   leafletMap.value.fitBounds(bounds)
 
+  heatLatLngs.value = []
+
   heat.value = L.heatLayer([], {
     radius: 25
   }).addTo(leafletMap.value)
 
   leafletMap.value.on('click', (e: L.LeafletMouseEvent) => {
     e.latlng.alt = 25 / playerCount.value
-    latlngs.value.push(e.latlng)
-    heat.value?.setLatLngs(latlngs.value)
+    heatLatLngs.value.push(e.latlng)
+    heat.value?.setLatLngs(heatLatLngs.value)
   })
 }
 
