@@ -17,9 +17,9 @@ func main() {
 
 	initEnv()
 	initCache()
-	lobbyHandler, sessionHandler := initHandlers()
+	lobbyService, sessionService := initServices()
 
-	registerRoutes(app, lobbyHandler, sessionHandler)
+	registerRoutes(app, lobbyService, sessionService)
 
 	log.Fatal(app.Listen(":8080"))
 }
@@ -42,18 +42,24 @@ func initCache() *redis.Client {
 	return cache
 }
 
-func initHandlers() (*lobby.LobbyHandler, *session.SessionHandler) {
-	lobbyHandler := lobby.NewLobbyHandler(cache)
-	sessionHandler := session.NewSessionHandler(cache)
+func initServices() (*lobby.Service, *session.Service) {
+	lobbyRepository := lobby.NewRepository(cache)
+	sessionRepository := session.NewRepository(cache)
 
-	return lobbyHandler, sessionHandler
+	lobbyService := lobby.NewService(lobbyRepository)
+	sessionService := session.NewService(sessionRepository)
+
+	return lobbyService, sessionService
 }
 
-func registerRoutes(app *fiber.App, lobbyHandler *lobby.LobbyHandler, sessionHandler *session.SessionHandler) {
+func registerRoutes(app *fiber.App, lobbyService *lobby.Service, sessionService *session.Service) {
+	lobbyController := lobby.NewController(lobbyService)
+	sessionController := session.NewController(sessionService)
+
 	routes := app.Group("/api")
 
-	routes.Post("/lobby", lobbyHandler.CreateLobby)
-	routes.Get("/lobby/:id", lobbyHandler.GetLobby)
-	routes.Post("/session", sessionHandler.CreateSession)
-	routes.Get("/session/:id", sessionHandler.GetSession)
+	routes.Post("/lobby", lobbyController.PostLobby)
+	routes.Get("/lobby/:id", lobbyController.GetLobby)
+	routes.Post("/session", sessionController.PostSession)
+	routes.Get("/session/:id", sessionController.GetSession)
 }
