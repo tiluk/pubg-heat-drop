@@ -36,11 +36,11 @@ func (r *Repository) GetLobby(ctx *fiber.Ctx, lobbyID string) (*Lobby, error) {
 		return nil, err
 	}
 
-	var lobby *Lobby
-	err = json.Unmarshal([]byte(lobbyJSON), lobby)
+	var lobby Lobby
+	err = json.Unmarshal([]byte(lobbyJSON), &lobby)
 	if err != nil {
 		return nil, err
 	}
 
-	return lobby, nil
+	return &lobby, nil
 }
