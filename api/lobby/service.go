@@ -18,7 +18,6 @@ func NewService(repository *Repository) *Service {
 type Heat struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`
-	Alt float64 `json:"alt"`
 }
 
 type Lobby struct {
@@ -44,6 +43,23 @@ func (s *Service) CreateLobby(ctx *fiber.Ctx) (*Lobby, error) {
 
 func (s *Service) GetLobby(ctx *fiber.Ctx, lobbyID string) (*Lobby, error) {
 	lobby, err := s.repository.GetLobby(ctx, lobbyID)
+	if err != nil {
+		return nil, err
+	}
+
+	return lobby, nil
+}
+
+func (s *Service) AddVote(ctx *fiber.Ctx, lobbyID string, heat *Heat) (*Lobby, error) {
+	lobby, err := s.repository.GetLobby(ctx, lobbyID)
+	if err != nil {
+		return nil, err
+	}
+
+	lobby.Heatmap = append(lobby.Heatmap, *heat)
+	lobby.ActiveUsers++
+
+	err = s.repository.UpdateLobby(ctx, lobby)
 	if err != nil {
 		return nil, err
 	}

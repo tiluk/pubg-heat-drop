@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tiluk/pubg-heat-drop/lobby"
 	"github.com/tiluk/pubg-heat-drop/session"
+	"github.com/tiluk/pubg-heat-drop/vote"
 )
 
 var cache *redis.Client
@@ -17,9 +18,9 @@ func main() {
 
 	initEnv()
 	initCache()
-	lobbyService, sessionService := initServices()
+	lobbyService, sessionService, voteService := initServices()
 
-	registerRoutes(app, lobbyService, sessionService)
+	registerRoutes(app, lobbyService, sessionService, voteService)
 
 	log.Fatal(app.Listen(":8080"))
 }
@@ -42,19 +43,22 @@ func initCache() *redis.Client {
 	return cache
 }
 
-func initServices() (*lobby.Service, *session.Service) {
+func initServices() (*lobby.Service, *session.Service, *vote.Service) {
 	lobbyRepository := lobby.NewRepository(cache)
 	sessionRepository := session.NewRepository(cache)
 
 	lobbyService := lobby.NewService(lobbyRepository)
 	sessionService := session.NewService(sessionRepository)
 
-	return lobbyService, sessionService
+	voteService := vote.NewService(sessionService, lobbyService)
+
+	return lobbyService, sessionService, voteService
 }
 
-func registerRoutes(app *fiber.App, lobbyService *lobby.Service, sessionService *session.Service) {
+func registerRoutes(app *fiber.App, lobbyService *lobby.Service, sessionService *session.Service, voteService *vote.Service) {
 	lobbyController := lobby.NewController(lobbyService)
 	sessionController := session.NewController(sessionService)
+	voteController := vote.NewController(voteService)
 
 	routes := app.Group("/api")
 
@@ -62,4 +66,5 @@ func registerRoutes(app *fiber.App, lobbyService *lobby.Service, sessionService 
 	routes.Get("/lobby/:id", lobbyController.GetLobby)
 	routes.Post("/session", sessionController.PostSession)
 	routes.Get("/session/:id", sessionController.GetSession)
+	routes.Post("/vote/:id", voteController.PostVote)
 }

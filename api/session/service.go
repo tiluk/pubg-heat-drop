@@ -44,3 +44,12 @@ func (s *Service) GetSession(ctx *fiber.Ctx, sessionID string) (*Session, error)
 
 	return session, nil
 }
+
+func (s *Service) SetVoted(ctx *fiber.Ctx, sessionID string) error {
+	err := s.repository.SetHasVoted(ctx, sessionID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

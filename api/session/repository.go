@@ -32,7 +32,9 @@ func (r *Repository) CreateSession(ctx *fiber.Ctx, session *Session) error {
 
 func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*Session, error) {
 	sessionJSON, err := r.cache.Get(ctx.Context(), toSessionKey(sessionID)).Result()
-	if err != nil {
+	if err == redis.Nil {
+		return nil, fiber.NewError(fiber.StatusNotFound, "session not found")
+	} else if err != nil {
 		return nil, err
 	}
 
@@ -43,4 +45,19 @@ func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*Session, err
 	}
 
 	return &session, nil
+}
+
+func (r *Repository) SetHasVoted(ctx *fiber.Ctx, sessionID string) error {
+	session, err := r.GetSession(ctx, sessionID)
+	if err != nil {
+		return err
+	}
+
+	session.HasVoted = true
+	sessionJSON, err := json.Marshal(session)
+	if err != nil {
+		return err
+	}
+
+	return r.cache.Set(ctx.Context(), toSessionKey(sessionID), sessionJSON, 0).Err()
 }
