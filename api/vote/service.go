@@ -3,6 +3,7 @@ package vote
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/tiluk/pubg-heat-drop/lobby"
+	"github.com/tiluk/pubg-heat-drop/models"
 	"github.com/tiluk/pubg-heat-drop/session"
 )
 
@@ -18,7 +19,7 @@ func NewService(sessionService *session.Service, lobbyService *lobby.Service) *S
 	}
 }
 
-func (s *Service) CastVote(ctx *fiber.Ctx, sessionID string, lobbyID string, heat *lobby.Heat) (*lobby.Lobby, error) {
+func (s *Service) CastVote(ctx *fiber.Ctx, sessionID string, lobbyID string, heat *models.Heat) (*models.Lobby, error) {
 	lobby, err := s.lobbyService.AddVote(ctx, lobbyID, heat)
 	if err != nil {
 		return nil, err

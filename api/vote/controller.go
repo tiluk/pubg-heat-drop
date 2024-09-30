@@ -3,7 +3,7 @@ package vote
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/tiluk/pubg-heat-drop/lobby"
+	"github.com/tiluk/pubg-heat-drop/models"
 )
 
 type Controller struct {
@@ -27,7 +27,7 @@ func (c *Controller) PostVote(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid session ID")
 	}
 
-	var heat lobby.Heat
+	var heat models.Heat
 	err = ctx.BodyParser(&heat)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())

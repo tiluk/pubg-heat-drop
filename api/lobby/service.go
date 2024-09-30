@@ -3,6 +3,7 @@ package lobby
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/tiluk/pubg-heat-drop/models"
 )
 
 type Service struct {
@@ -15,21 +16,10 @@ func NewService(repository *Repository) *Service {
 	}
 }
 
-type Heat struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
-}
-
-type Lobby struct {
-	LobbyID     string `json:"lobbyID"`
-	Heatmap     []Heat `json:"heatmap"`
-	ActiveUsers int    `json:"activeUsers"`
-}
-
-func (s *Service) CreateLobby(ctx *fiber.Ctx) (*Lobby, error) {
-	lobby := &Lobby{
+func (s *Service) CreateLobby(ctx *fiber.Ctx) (*models.Lobby, error) {
+	lobby := &models.Lobby{
 		LobbyID:     uuid.NewString(),
-		Heatmap:     []Heat{},
+		Heatmap:     []models.Heat{},
 		ActiveUsers: 0,
 	}
 
@@ -41,16 +31,32 @@ func (s *Service) CreateLobby(ctx *fiber.Ctx) (*Lobby, error) {
 	return lobby, nil
 }
 
-func (s *Service) GetLobby(ctx *fiber.Ctx, lobbyID string) (*Lobby, error) {
+func (s *Service) GetLobby(ctx *fiber.Ctx, lobbyID string) (*models.LobbyResponse, error) {
+	var intensityMultiplier float64 = 10
+
 	lobby, err := s.repository.GetLobby(ctx, lobbyID)
 	if err != nil {
 		return nil, err
 	}
 
-	return lobby, nil
+	lobbyResponse := &models.LobbyResponse{
+		LobbyID:     lobby.LobbyID,
+		Heatmap:     []models.Heatmap{},
+		ActiveUsers: lobby.ActiveUsers,
+	}
+	lobbyResponse.Heatmap = make([]models.Heatmap, len(lobby.Heatmap))
+	for i, heat := range lobby.Heatmap {
+		lobbyResponse.Heatmap[i] = models.Heatmap{
+			Lat: heat.Lat,
+			Lng: heat.Lng,
+			Alt: intensityMultiplier / float64(lobby.ActiveUsers),
+		}
+	}
+
+	return lobbyResponse, nil
 }
 
-func (s *Service) AddVote(ctx *fiber.Ctx, lobbyID string, heat *Heat) (*Lobby, error) {
+func (s *Service) AddVote(ctx *fiber.Ctx, lobbyID string, heat *models.Heat) (*models.Lobby, error) {
 	lobby, err := s.repository.GetLobby(ctx, lobbyID)
 	if err != nil {
 		return nil, err

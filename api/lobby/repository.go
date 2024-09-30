@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+	"github.com/tiluk/pubg-heat-drop/models"
 )
 
 type Repository struct {
@@ -21,7 +22,7 @@ func toLobbyKey(lobbyID string) string {
 	return "lobby:" + lobbyID
 }
 
-func (r *Repository) CreateLobby(ctx *fiber.Ctx, lobby *Lobby) error {
+func (r *Repository) CreateLobby(ctx *fiber.Ctx, lobby *models.Lobby) error {
 	lobbyJSON, err := json.Marshal(lobby)
 	if err != nil {
 		return err
@@ -30,7 +31,7 @@ func (r *Repository) CreateLobby(ctx *fiber.Ctx, lobby *Lobby) error {
 	return r.cache.Set(ctx.Context(), toLobbyKey(lobby.LobbyID), lobbyJSON, 0).Err()
 }
 
-func (r *Repository) GetLobby(ctx *fiber.Ctx, lobbyID string) (*Lobby, error) {
+func (r *Repository) GetLobby(ctx *fiber.Ctx, lobbyID string) (*models.Lobby, error) {
 	lobbyJSON, err := r.cache.Get(ctx.Context(), toLobbyKey(lobbyID)).Result()
 	if err == redis.Nil {
 		return nil, fiber.NewError(fiber.StatusNotFound, "lobby not found")
@@ -38,7 +39,7 @@ func (r *Repository) GetLobby(ctx *fiber.Ctx, lobbyID string) (*Lobby, error) {
 		return nil, err
 	}
 
-	var lobby Lobby
+	var lobby models.Lobby
 	err = json.Unmarshal([]byte(lobbyJSON), &lobby)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func (r *Repository) GetLobby(ctx *fiber.Ctx, lobbyID string) (*Lobby, error) {
 	return &lobby, nil
 }
 
-func (r *Repository) UpdateLobby(ctx *fiber.Ctx, lobby *Lobby) error {
+func (r *Repository) UpdateLobby(ctx *fiber.Ctx, lobby *models.Lobby) error {
 	lobbyJSON, err := json.Marshal(lobby)
 	if err != nil {
 		return err

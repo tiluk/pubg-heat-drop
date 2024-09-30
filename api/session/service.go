@@ -3,6 +3,7 @@ package session
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/tiluk/pubg-heat-drop/models"
 )
 
 type Service struct {
@@ -15,14 +16,8 @@ func NewService(repository *Repository) *Service {
 	}
 }
 
-type Session struct {
-	SessionID string `json:"sessionID"`
-	HasVoted  bool   `json:"hasVoted"`
-	Lobby     string `json:"lobby"`
-}
-
-func (s *Service) CreateSession(ctx *fiber.Ctx) (*Session, error) {
-	session := &Session{
+func (s *Service) CreateSession(ctx *fiber.Ctx) (*models.Session, error) {
+	session := &models.Session{
 		SessionID: uuid.NewString(),
 		HasVoted:  false,
 		Lobby:     "",
@@ -36,7 +31,7 @@ func (s *Service) CreateSession(ctx *fiber.Ctx) (*Session, error) {
 	return session, nil
 }
 
-func (s *Service) GetSession(ctx *fiber.Ctx, sessionID string) (*Session, error) {
+func (s *Service) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
 	session, err := s.repository.GetSession(ctx, sessionID)
 	if err != nil {
 		return nil, err

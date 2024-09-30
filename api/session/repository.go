@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+	"github.com/tiluk/pubg-heat-drop/models"
 )
 
 type Repository struct {
@@ -21,7 +22,7 @@ func toSessionKey(sessionID string) string {
 	return "session:" + sessionID
 }
 
-func (r *Repository) CreateSession(ctx *fiber.Ctx, session *Session) error {
+func (r *Repository) CreateSession(ctx *fiber.Ctx, session *models.Session) error {
 	sessionJSON, err := json.Marshal(session)
 	if err != nil {
 		return err
@@ -30,7 +31,7 @@ func (r *Repository) CreateSession(ctx *fiber.Ctx, session *Session) error {
 	return r.cache.Set(ctx.Context(), toSessionKey(session.SessionID), sessionJSON, 0).Err()
 }
 
-func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*Session, error) {
+func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
 	sessionJSON, err := r.cache.Get(ctx.Context(), toSessionKey(sessionID)).Result()
 	if err == redis.Nil {
 		return nil, fiber.NewError(fiber.StatusNotFound, "session not found")
@@ -38,7 +39,7 @@ func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*Session, err
 		return nil, err
 	}
 
-	var session Session
+	var session models.Session
 	err = json.Unmarshal([]byte(sessionJSON), &session)
 	if err != nil {
 		return nil, err
