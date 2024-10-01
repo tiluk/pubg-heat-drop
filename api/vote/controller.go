@@ -6,17 +6,17 @@ import (
 	"github.com/tiluk/pubg-heat-drop/models"
 )
 
-type Controller struct {
-	service *Service
+type VoteController struct {
+	service *VoteService
 }
 
-func NewController(service *Service) *Controller {
-	return &Controller{
+func NewController(service *VoteService) *VoteController {
+	return &VoteController{
 		service: service,
 	}
 }
 
-func (c *Controller) PostVote(ctx *fiber.Ctx) error {
+func (c *VoteController) PostVote(ctx *fiber.Ctx) error {
 	authHeader := ctx.Get("Authorization")
 	if len(authHeader) < 8 {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid or missing Authorization header")

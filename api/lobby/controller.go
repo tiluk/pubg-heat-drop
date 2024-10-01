@@ -4,17 +4,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type Controller struct {
-	service *Service
+type LobbyController struct {
+	service *LobbyService
 }
 
-func NewController(service *Service) *Controller {
-	return &Controller{
+func NewController(service *LobbyService) *LobbyController {
+	return &LobbyController{
 		service: service,
 	}
 }
 
-func (c *Controller) PostLobby(ctx *fiber.Ctx) error {
+func (c *LobbyController) PostLobby(ctx *fiber.Ctx) error {
 	lobby, err := c.service.CreateLobby(ctx)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -23,7 +23,7 @@ func (c *Controller) PostLobby(ctx *fiber.Ctx) error {
 	return ctx.JSON(lobby)
 }
 
-func (c *Controller) GetLobby(ctx *fiber.Ctx) error {
+func (c *LobbyController) GetLobby(ctx *fiber.Ctx) error {
 	lobbyID := ctx.Params("id")
 	if lobbyID == "" {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Missing lobby ID")

@@ -6,17 +6,17 @@ import (
 	"github.com/tiluk/pubg-heat-drop/models"
 )
 
-type Service struct {
-	repository *Repository
+type SessionService struct {
+	repository *SessionRepository
 }
 
-func NewService(repository *Repository) *Service {
-	return &Service{
+func NewService(repository *SessionRepository) *SessionService {
+	return &SessionService{
 		repository: repository,
 	}
 }
 
-func (s *Service) CreateSession(ctx *fiber.Ctx) (*models.Session, error) {
+func (s *SessionService) CreateSession(ctx *fiber.Ctx) (*models.Session, error) {
 	session := &models.Session{
 		SessionID: uuid.NewString(),
 		HasVoted:  false,
@@ -31,7 +31,7 @@ func (s *Service) CreateSession(ctx *fiber.Ctx) (*models.Session, error) {
 	return session, nil
 }
 
-func (s *Service) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
+func (s *SessionService) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
 	session, err := s.repository.GetSession(ctx, sessionID)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (s *Service) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session,
 	return session, nil
 }
 
-func (s *Service) SetVoted(ctx *fiber.Ctx, sessionID string) error {
+func (s *SessionService) SetVoted(ctx *fiber.Ctx, sessionID string) error {
 	err := s.repository.SetHasVoted(ctx, sessionID)
 	if err != nil {
 		return err

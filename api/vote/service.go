@@ -7,20 +7,20 @@ import (
 	"github.com/tiluk/pubg-heat-drop/session"
 )
 
-type Service struct {
-	sessionService *session.Service
-	lobbyService   *lobby.Service
+type VoteService struct {
+	sessionService *session.SessionService
+	lobbyService   *lobby.LobbyService
 }
 
-func NewService(sessionService *session.Service, lobbyService *lobby.Service) *Service {
-	return &Service{
+func NewService(sessionService *session.SessionService, lobbyService *lobby.LobbyService) *VoteService {
+	return &VoteService{
 		sessionService: sessionService,
 		lobbyService:   lobbyService,
 	}
 }
 
-func (s *Service) CastVote(ctx *fiber.Ctx, sessionID string, lobbyID string, heat *models.Heat) (*models.Lobby, error) {
-	lobby, err := s.lobbyService.AddVote(ctx, lobbyID, heat)
+func (s *VoteService) CastVote(ctx *fiber.Ctx, sessionID string, lobbyID string, heat *models.Heat) (*models.LobbyResponse, error) {
+	lobbyWithHeat, err := s.lobbyService.AddVote(ctx, lobbyID, heat)
 	if err != nil {
 		return nil, err
 	}
@@ -30,5 +30,6 @@ func (s *Service) CastVote(ctx *fiber.Ctx, sessionID string, lobbyID string, hea
 		return nil, err
 	}
 
-	return lobby, nil
+	lobbyResponse := lobby.LobbyToLobbyResponse(lobbyWithHeat)
+	return lobbyResponse, nil
 }

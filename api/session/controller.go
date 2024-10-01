@@ -2,17 +2,17 @@ package session
 
 import "github.com/gofiber/fiber/v2"
 
-type Controller struct {
-	service *Service
+type SessionController struct {
+	service *SessionService
 }
 
-func NewController(service *Service) *Controller {
-	return &Controller{
+func NewController(service *SessionService) *SessionController {
+	return &SessionController{
 		service: service,
 	}
 }
 
-func (c *Controller) PostSession(ctx *fiber.Ctx) error {
+func (c *SessionController) PostSession(ctx *fiber.Ctx) error {
 	session, err := c.service.CreateSession(ctx)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -21,7 +21,7 @@ func (c *Controller) PostSession(ctx *fiber.Ctx) error {
 	return ctx.JSON(session)
 }
 
-func (c *Controller) GetSession(ctx *fiber.Ctx) error {
+func (c *SessionController) GetSession(ctx *fiber.Ctx) error {
 	sessionID := ctx.Params("id")
 	if sessionID == "" {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Missing session ID")

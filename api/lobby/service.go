@@ -6,17 +6,38 @@ import (
 	"github.com/tiluk/pubg-heat-drop/models"
 )
 
-type Service struct {
-	repository *Repository
+type LobbyService struct {
+	repository *LobbyRepository
 }
 
-func NewService(repository *Repository) *Service {
-	return &Service{
+func NewService(repository *LobbyRepository) *LobbyService {
+	return &LobbyService{
 		repository: repository,
 	}
 }
 
-func (s *Service) CreateLobby(ctx *fiber.Ctx) (*models.Lobby, error) {
+func LobbyToLobbyResponse(lobby *models.Lobby) *models.LobbyResponse {
+	var intensityMultiplier float64 = 10
+
+	lobbyResponse := &models.LobbyResponse{
+		LobbyID:     lobby.LobbyID,
+		Heatmap:     []models.Heatmap{},
+		ActiveUsers: lobby.ActiveUsers,
+	}
+
+	lobbyResponse.Heatmap = make([]models.Heatmap, len(lobby.Heatmap))
+	for i, heat := range lobby.Heatmap {
+		lobbyResponse.Heatmap[i] = models.Heatmap{
+			Lat: heat.Lat,
+			Lng: heat.Lng,
+			Alt: intensityMultiplier / float64(lobby.ActiveUsers),
+		}
+	}
+
+	return lobbyResponse
+}
+
+func (s *LobbyService) CreateLobby(ctx *fiber.Ctx) (*models.Lobby, error) {
 	lobby := &models.Lobby{
 		LobbyID:     uuid.NewString(),
 		Heatmap:     []models.Heat{},
@@ -31,32 +52,16 @@ func (s *Service) CreateLobby(ctx *fiber.Ctx) (*models.Lobby, error) {
 	return lobby, nil
 }
 
-func (s *Service) GetLobby(ctx *fiber.Ctx, lobbyID string) (*models.LobbyResponse, error) {
-	var intensityMultiplier float64 = 10
-
+func (s *LobbyService) GetLobby(ctx *fiber.Ctx, lobbyID string) (*models.LobbyResponse, error) {
 	lobby, err := s.repository.GetLobby(ctx, lobbyID)
 	if err != nil {
 		return nil, err
 	}
 
-	lobbyResponse := &models.LobbyResponse{
-		LobbyID:     lobby.LobbyID,
-		Heatmap:     []models.Heatmap{},
-		ActiveUsers: lobby.ActiveUsers,
-	}
-	lobbyResponse.Heatmap = make([]models.Heatmap, len(lobby.Heatmap))
-	for i, heat := range lobby.Heatmap {
-		lobbyResponse.Heatmap[i] = models.Heatmap{
-			Lat: heat.Lat,
-			Lng: heat.Lng,
-			Alt: intensityMultiplier / float64(lobby.ActiveUsers),
-		}
-	}
-
-	return lobbyResponse, nil
+	return LobbyToLobbyResponse(lobby), nil
 }
 
-func (s *Service) AddVote(ctx *fiber.Ctx, lobbyID string, heat *models.Heat) (*models.Lobby, error) {
+func (s *LobbyService) AddVote(ctx *fiber.Ctx, lobbyID string, heat *models.Heat) (*models.Lobby, error) {
 	lobby, err := s.repository.GetLobby(ctx, lobbyID)
 	if err != nil {
 		return nil, err

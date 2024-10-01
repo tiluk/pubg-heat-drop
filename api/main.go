@@ -43,7 +43,7 @@ func initCache() *redis.Client {
 	return cache
 }
 
-func initServices() (*lobby.Service, *session.Service, *vote.Service) {
+func initServices() (*lobby.LobbyService, *session.SessionService, *vote.VoteService) {
 	lobbyRepository := lobby.NewRepository(cache)
 	sessionRepository := session.NewRepository(cache)
 
@@ -55,7 +55,7 @@ func initServices() (*lobby.Service, *session.Service, *vote.Service) {
 	return lobbyService, sessionService, voteService
 }
 
-func registerRoutes(app *fiber.App, lobbyService *lobby.Service, sessionService *session.Service, voteService *vote.Service) {
+func registerRoutes(app *fiber.App, lobbyService *lobby.LobbyService, sessionService *session.SessionService, voteService *vote.VoteService) {
 	lobbyController := lobby.NewController(lobbyService)
 	sessionController := session.NewController(sessionService)
 	voteController := vote.NewController(voteService)

@@ -8,12 +8,12 @@ import (
 	"github.com/tiluk/pubg-heat-drop/models"
 )
 
-type Repository struct {
+type SessionRepository struct {
 	cache *redis.Client
 }
 
-func NewRepository(cache *redis.Client) *Repository {
-	return &Repository{
+func NewRepository(cache *redis.Client) *SessionRepository {
+	return &SessionRepository{
 		cache: cache,
 	}
 }
@@ -22,7 +22,7 @@ func toSessionKey(sessionID string) string {
 	return "session:" + sessionID
 }
 
-func (r *Repository) CreateSession(ctx *fiber.Ctx, session *models.Session) error {
+func (r *SessionRepository) CreateSession(ctx *fiber.Ctx, session *models.Session) error {
 	sessionJSON, err := json.Marshal(session)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (r *Repository) CreateSession(ctx *fiber.Ctx, session *models.Session) erro
 	return r.cache.Set(ctx.Context(), toSessionKey(session.SessionID), sessionJSON, 0).Err()
 }
 
-func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
+func (r *SessionRepository) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
 	sessionJSON, err := r.cache.Get(ctx.Context(), toSessionKey(sessionID)).Result()
 	if err == redis.Nil {
 		return nil, fiber.NewError(fiber.StatusNotFound, "session not found")
@@ -48,7 +48,7 @@ func (r *Repository) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Sessi
 	return &session, nil
 }
 
-func (r *Repository) SetHasVoted(ctx *fiber.Ctx, sessionID string) error {
+func (r *SessionRepository) SetHasVoted(ctx *fiber.Ctx, sessionID string) error {
 	session, err := r.GetSession(ctx, sessionID)
 	if err != nil {
 		return err
