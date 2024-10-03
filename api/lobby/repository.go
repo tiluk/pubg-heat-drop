@@ -35,7 +35,8 @@ func (r *LobbyRepository) GetLobby(ctx *fiber.Ctx, lobbyID string) (*models.Lobb
 	lobbyJSON, err := r.cache.Get(ctx.Context(), toLobbyKey(lobbyID)).Result()
 	if err == redis.Nil {
 		return nil, fiber.NewError(fiber.StatusNotFound, "lobby not found")
-	} else if err != nil {
+	}
+	if err != nil {
 		return nil, err
 	}
 
@@ -55,4 +56,35 @@ func (r *LobbyRepository) UpdateLobby(ctx *fiber.Ctx, lobby *models.Lobby) error
 	}
 
 	return r.cache.Set(ctx.Context(), toLobbyKey(lobby.LobbyID), lobbyJSON, 0).Err()
+}
+
+func (r *LobbyRepository) AddVoteToLobby(ctx *fiber.Ctx, lobbyID string, sessionID string, heat models.Heat) error {
+	lobby, err := r.GetLobby(ctx, lobbyID)
+	if err != nil {
+		return err
+
+	}
+
+	err = r.cache.SAdd(ctx.Context(), toLobbyKey(lobbyID)+":sessions", sessionID).Err()
+	if err != nil {
+		return err
+	}
+
+	lobby.Heatmap = append(lobby.Heatmap, heat)
+
+	lobbyJSON, err := json.Marshal(lobby)
+	if err != nil {
+		return err
+	}
+
+	err = r.cache.Set(ctx.Context(), toLobbyKey(lobbyID), lobbyJSON, 0).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *LobbyRepository) GetActiveUsers(ctx *fiber.Ctx, lobbyID string) (int64, error) {
+	return r.cache.SCard(ctx.Context(), toLobbyKey(lobbyID)+":sessions").Result()
 }

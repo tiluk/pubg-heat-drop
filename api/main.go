@@ -8,19 +8,17 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tiluk/pubg-heat-drop/lobby"
 	"github.com/tiluk/pubg-heat-drop/session"
-	"github.com/tiluk/pubg-heat-drop/vote"
 )
-
-var cache *redis.Client
 
 func main() {
 	app := fiber.New()
 
 	initEnv()
-	initCache()
-	lobbyService, sessionService, voteService := initServices()
+	cache := initCache()
+	sessionService := initSession(cache)
+	lobbyService := initServices(cache, sessionService)
 
-	registerRoutes(app, lobbyService, sessionService, voteService)
+	registerRoutes(app, lobbyService, sessionService)
 
 	log.Fatal(app.Listen(":8080"))
 }
@@ -34,7 +32,7 @@ func initEnv() {
 }
 
 func initCache() *redis.Client {
-	cache = redis.NewClient(&redis.Options{
+	cache := redis.NewClient(&redis.Options{
 		Addr:     viper.GetString("REDIS_HOST") + ":" + viper.GetString("REDIS_PORT"),
 		Password: viper.GetString("REDIS_PASSWORD"),
 		DB:       0,
@@ -43,28 +41,29 @@ func initCache() *redis.Client {
 	return cache
 }
 
-func initServices() (*lobby.LobbyService, *session.SessionService, *vote.VoteService) {
-	lobbyRepository := lobby.NewRepository(cache)
+func initSession(cache *redis.Client) *session.SessionService {
 	sessionRepository := session.NewRepository(cache)
 
-	lobbyService := lobby.NewService(lobbyRepository)
-	sessionService := session.NewService(sessionRepository)
-
-	voteService := vote.NewService(sessionService, lobbyService)
-
-	return lobbyService, sessionService, voteService
+	return session.NewService(sessionRepository)
 }
 
-func registerRoutes(app *fiber.App, lobbyService *lobby.LobbyService, sessionService *session.SessionService, voteService *vote.VoteService) {
+func initServices(cache *redis.Client, sessionService *session.SessionService) *lobby.LobbyService {
+	lobbyRepository := lobby.NewRepository(cache)
+
+	lobbyService := lobby.NewService(lobbyRepository, sessionService)
+
+	return lobbyService
+}
+
+func registerRoutes(app *fiber.App, lobbyService *lobby.LobbyService, sessionService *session.SessionService) {
 	lobbyController := lobby.NewController(lobbyService)
 	sessionController := session.NewController(sessionService)
-	voteController := vote.NewController(voteService)
 
 	routes := app.Group("/api")
 
-	routes.Post("/lobby", lobbyController.PostLobby)
-	routes.Get("/lobby/:id", lobbyController.GetLobby)
 	routes.Post("/session", sessionController.PostSession)
 	routes.Get("/session/:id", sessionController.GetSession)
-	routes.Post("/vote/:id", voteController.PostVote)
+	routes.Post("/lobby", lobbyController.PostLobby)
+	routes.Get("/lobby/:id", lobbyController.GetLobby)
+	routes.Post("/lobby/:id/vote", lobbyController.PostLobbyVote)
 }

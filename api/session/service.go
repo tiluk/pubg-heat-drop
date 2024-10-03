@@ -20,7 +20,6 @@ func (s *SessionService) CreateSession(ctx *fiber.Ctx) (*models.Session, error) 
 	session := &models.Session{
 		SessionID: uuid.NewString(),
 		HasVoted:  false,
-		Lobby:     "",
 	}
 
 	err := s.repository.CreateSession(ctx, session)
