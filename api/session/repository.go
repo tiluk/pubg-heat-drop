@@ -62,3 +62,12 @@ func (r *SessionRepository) SetHasVoted(ctx *fiber.Ctx, sessionID string) error 
 
 	return r.cache.Set(ctx.Context(), toSessionKey(sessionID), sessionJSON, 0).Err()
 }
+
+func (r *SessionRepository) GetHasVoted(ctx *fiber.Ctx, sessionID string) (bool, error) {
+	session, err := r.GetSession(ctx, sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	return session.HasVoted, nil
+}

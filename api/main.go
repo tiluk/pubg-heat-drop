@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
+	"github.com/tiluk/pubg-heat-drop/auth"
 	"github.com/tiluk/pubg-heat-drop/lobby"
 	"github.com/tiluk/pubg-heat-drop/session"
 )
@@ -17,6 +18,8 @@ func main() {
 	cache := initCache()
 	sessionService := initSession(cache)
 	lobbyService := initServices(cache, sessionService)
+
+	setupMiddlewares(app, sessionService)
 
 	registerRoutes(app, lobbyService, sessionService)
 
@@ -55,14 +58,17 @@ func initServices(cache *redis.Client, sessionService *session.SessionService) *
 	return lobbyService
 }
 
+func setupMiddlewares(app *fiber.App, sessionService *session.SessionService) {
+	app.Use(auth.NewAuthMiddleware(sessionService))
+}
+
 func registerRoutes(app *fiber.App, lobbyService *lobby.LobbyService, sessionService *session.SessionService) {
 	lobbyController := lobby.NewController(lobbyService)
 	sessionController := session.NewController(sessionService)
 
 	routes := app.Group("/api")
 
-	routes.Post("/session", sessionController.PostSession)
-	routes.Get("/session/:id", sessionController.GetSession)
+	routes.Post("/auth", sessionController.PostSession)
 	routes.Post("/lobby", lobbyController.PostLobby)
 	routes.Get("/lobby/:id", lobbyController.GetLobby)
 	routes.Post("/lobby/:id/vote", lobbyController.PostLobbyVote)

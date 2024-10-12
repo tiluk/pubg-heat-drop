@@ -94,6 +94,9 @@ func (s *LobbyService) AddLobbyVote(ctx *fiber.Ctx, lobbyID string, sessionID st
 		return err
 	}
 
+	if ctx.Locals("hasVoted").(bool) {
+		return fiber.NewError(fiber.StatusConflict, "User has already voted")
+	}
 	err = s.sessionService.SetVoted(ctx, sessionID)
 	if err != nil {
 		return err

@@ -2,7 +2,10 @@ package session
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 	"github.com/tiluk/pubg-heat-drop/models"
 )
 
@@ -16,7 +19,7 @@ func NewService(repository *SessionRepository) *SessionService {
 	}
 }
 
-func (s *SessionService) CreateSession(ctx *fiber.Ctx) (*models.Session, error) {
+func (s *SessionService) CreateSession(ctx *fiber.Ctx) (*string, error) {
 	session := &models.Session{
 		SessionID: uuid.NewString(),
 		HasVoted:  false,
@@ -27,16 +30,16 @@ func (s *SessionService) CreateSession(ctx *fiber.Ctx) (*models.Session, error) 
 		return nil, err
 	}
 
-	return session, nil
-}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sessionID": session.SessionID,
+	})
 
-func (s *SessionService) GetSession(ctx *fiber.Ctx, sessionID string) (*models.Session, error) {
-	session, err := s.repository.GetSession(ctx, sessionID)
+	jwt, err := token.SignedString([]byte(viper.GetString("JWT_SECRET")))
 	if err != nil {
 		return nil, err
 	}
 
-	return session, nil
+	return &jwt, nil
 }
 
 func (s *SessionService) SetVoted(ctx *fiber.Ctx, sessionID string) error {
@@ -46,4 +49,28 @@ func (s *SessionService) SetVoted(ctx *fiber.Ctx, sessionID string) error {
 	}
 
 	return nil
+}
+
+func (s *SessionService) GetHasVoted(ctx *fiber.Ctx, sessionID string) (bool, error) {
+	hasVoted, err := s.repository.GetHasVoted(ctx, sessionID)
+	if err == redis.Nil {
+		return false, fiber.NewError(fiber.StatusNotFound, "session not found")
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return hasVoted, nil
+}
+
+func (s *SessionService) VerifyJWTSession(ctx *fiber.Ctx, unsafeSession *models.Session) (bool, error) {
+	_, err := s.repository.GetSession(ctx, unsafeSession.SessionID)
+	if err != nil && err != redis.Nil {
+		return false, err
+	}
+	if err == redis.Nil {
+		return false, nil
+	}
+
+	return true, nil
 }

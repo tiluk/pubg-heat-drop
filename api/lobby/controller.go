@@ -18,6 +18,9 @@ func NewController(service *LobbyService) *LobbyController {
 
 func (c *LobbyController) PostLobby(ctx *fiber.Ctx) error {
 	lobby, err := c.service.CreateLobby(ctx)
+	if e, ok := err.(*fiber.Error); ok {
+		return ctx.Status(e.Code).SendString(e.Message)
+	}
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
@@ -32,8 +35,8 @@ func (c *LobbyController) GetLobby(ctx *fiber.Ctx) error {
 	}
 
 	lobby, err := c.service.GetLobby(ctx, lobbyID)
-	if err.Error() == "lobby not found" {
-		return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
+	if e, ok := err.(*fiber.Error); ok {
+		return ctx.Status(e.Code).SendString(e.Message)
 	}
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -47,7 +50,7 @@ func (c *LobbyController) PostLobbyVote(ctx *fiber.Ctx) error {
 	if len(authHeader) < 8 && authHeader[0:7] != "Bearer " {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid or missing Authorization header")
 	}
-	sessionID := authHeader[7:]
+	sessionID := ctx.Locals("sessionID").(string)
 	_, err := uuid.Parse(sessionID)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid session ID")
@@ -65,6 +68,9 @@ func (c *LobbyController) PostLobbyVote(ctx *fiber.Ctx) error {
 	}
 
 	err = c.service.AddLobbyVote(ctx, lobbyID, sessionID, heat)
+	if e, ok := err.(*fiber.Error); ok {
+		return ctx.Status(e.Code).SendString(e.Message)
+	}
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
