@@ -66,6 +66,9 @@ func (c *LobbyController) PostLobbyVote(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+	if heat.Lat == 0 || heat.Lng == 0 {
+		return ctx.Status(fiber.StatusBadRequest).SendString("Invalid body")
+	}
 
 	err = c.service.AddLobbyVote(ctx, lobbyID, sessionID, heat)
 	if e, ok := err.(*fiber.Error); ok {

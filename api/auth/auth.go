@@ -16,7 +16,7 @@ func NewAuthMiddleware(sessionService *session.SessionService) func(ctx *fiber.C
 		}
 
 		authHeader := ctx.Get("Authorization")
-		if len(authHeader) < 8 && authHeader[0:7] != "Bearer " {
+		if len(authHeader) < 8 || authHeader[0:7] != "Bearer " {
 			return ctx.Status(fiber.StatusBadRequest).SendString("Invalid or missing Authorization header")
 		}
 
