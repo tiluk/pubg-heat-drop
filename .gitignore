@@ -31,3 +31,6 @@ coverage
 
 # Large media files
 High_Res.png
+
+#.env
+.env
